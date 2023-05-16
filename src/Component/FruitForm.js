@@ -1,14 +1,8 @@
 import React from "react";
 import { push, ref, set } from "firebase/database";
-import { realTimeDatabase, storage } from "../firebase";
-import {
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
+import { realTimeDatabase } from "../firebase";
 
 const REALTIME_DATABASE_KEY = "fruits";
-const STORAGE_KEY = "images/";
 
 export default class FruitForm extends React.Component {
   constructor() {
@@ -17,12 +11,10 @@ export default class FruitForm extends React.Component {
     this.state = {
       name: "",
       description: "",
-      fileInputFile: null,
-      fileInputValue: "",
     };
   }
 
-  writeData = (url) => {
+  writeData = () => {
     const fruitListRef = ref(realTimeDatabase, REALTIME_DATABASE_KEY);
     const newFruitRef = push(fruitListRef);
 
@@ -30,14 +22,11 @@ export default class FruitForm extends React.Component {
       name: this.state.name,
       description: this.state.description,
       date: new Date().toLocaleTimeString(),
-      url: url,
     });
 
     this.setState({
       name: "",
       description: "",
-      fileInputFile: null,
-      fileInputValue: "",
     });
   };
 
@@ -47,21 +36,6 @@ export default class FruitForm extends React.Component {
 
     this.setState({
       [name]: value,
-    });
-  };
-
-  submit = () => {
-    const fullStorageRef = storageRef(
-      storage,
-      STORAGE_KEY + this.state.fileInputFile.name
-    );
-
-    uploadBytes(fullStorageRef, this.state.fileInputFile).then((snapshot) => {
-      getDownloadURL(fullStorageRef, this.state.fileInputFile.name).then(
-        (url) => {
-          this.writeData(url);
-        }
-      );
     });
   };
 
@@ -90,21 +64,7 @@ export default class FruitForm extends React.Component {
           onChange={(e) => this.handleChange(e)}
         />
         <br />
-        <label>Image</label>
-        <br />
-        <input
-          type="file"
-          name="file"
-          value={this.state.fileInputValue}
-          onChange={(e) => {
-            this.setState({
-              fileInputFile: e.target.files[0],
-              fileInputValue: e.target.file,
-            });
-          }}
-        />
-        <br />
-        <button onClick={this.submit}>Submit Data</button>
+        <button onClick={this.writeData}>Submit Data</button>
       </div>
     );
   }
